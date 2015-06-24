@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -24,19 +24,15 @@ namespace SubmitHiveJob
         }
 
 
-        public static void LoadTweets(JobSubmissionCertificateCredential creds)
+        public static void LoadTweets(JobSubmissionCertificateCredential creds, AzureSettings settings)
         {
 
-           var hiveJobDefinition = new HiveJobCreateParameters()
+              var hiveJobDefinition = new HiveJobCreateParameters()
             {
                 JobName = "Load tweets to external table",
                 StatusFolder = "/AAALoadTweets",
 
-                Query = "DROP TABLE tweets;" +
-                             "CREATE EXTERNAL TABLE tweets( id_str string, created_at string, retweet_count string, tweetText string, userName string, userId string, screenName string, countryCode string, placeType string, placeName string, placeType1 string, coordinates array<string>)" +
-                             " ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' COLLECTION ITEMS TERMINATED BY ',' STORED AS TEXTFILE ;" +
-                              " LOAD DATA INPATH 'wasb://aidoshdinsight@aidosacct.blob.core.windows.net/tweets/data' OVERWRITE INTO TABLE tweets;" +
-                             "SELECT  COUNT(*) as tweetCount  FROM tweets"
+                Query = "select identifiers.identifier, Z.X.estfrequency as tweetCount  from (select explode(word_map) as X from ( SELECT context_ngrams(sentences(lower(tweetText)), array(null), 1000) as word_map FROM tweets ) struct) Z join identifiers on identifiers.identifier = Z.X.ngram[0]"
             };
 
 
@@ -56,20 +52,24 @@ namespace SubmitHiveJob
 
         }
 
-
-        public static void AggregateGeoLocations(JobSubmissionCertificateCredential creds)
+        public static void CreateTables(JobSubmissionCertificateCredential creds, AzureSettings settings)
         {
+
+            var storagePath = String.Format("wasb://{0}@{1}.blob.core.windows.net/", settings.ClusterName, settings.StorageAccount);
+            var TweetInPath = storagePath + @"/Tweets";
+            var IdentifiersInPath = storagePath + @"/Identifiers";
+
             var hiveJobDefinition = new HiveJobCreateParameters()
             {
-                JobName = "Load tweets to external table",
-                StatusFolder = "/AAALoadTweets",
+                JobName = "Create external tables",
+                StatusFolder = "/AAACreateTables",
 
-                Query = " DROP TABLE GEOLOCATIONS;" +
-                             " CREATE EXTERNAL TABLE GEOLOCATIONS (latitude string, longitude string, magnitude string);" +
-                              " INSERT OVERWRITE TABLE GEOLOCATIONS " +
-                             " select  coordinates[1],coordinates[0], count(coordinates[0]) from tweets  where coordinates[0] is not null group by coordinates[0],coordinates[1] ;" +
-                             " select count(*) as LocationCount  from GEOLOCATIONS"
+                Query = "DROP TABLE tweets; CREATE EXTERNAL TABLE tweets( id_str string, created_at string, retweet_count string, tweetText string, userName string, userId string, screenName string, countryCode string, placeType string, placeName string, placeType1 string, coordinates array<string>)" +
+                "ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' COLLECTION ITEMS TERMINATED BY ',' STORED AS TEXTFILE location '" + TweetInPath + "';" +
+                "DROP TABLE identifiers; CREATE EXTERNAL TABLE identifiers(identifier string)" +
+                "ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' STORED AS TEXTFILE location '" + IdentifiersInPath + "';" 
             };
+
 
             // Submit the Hive job
             var jobClient = JobSubmissionClientFactory.Connect(creds);
@@ -83,8 +83,12 @@ namespace SubmitHiveJob
 
             var reader = new StreamReader(stream);
             Console.WriteLine(reader.ReadToEnd());
+
+
         }
 
+
+       
         private static JobSubmissionCertificateCredential GenerateJobSubmissionCert(AzureSettings settings)
         {
             var store = new X509Store();
@@ -95,29 +99,7 @@ namespace SubmitHiveJob
         }
 
 
-        public static void TestBasicQuery(JobSubmissionCertificateCredential creds)
-        {
-            var hiveJobDefinition = new HiveJobCreateParameters()
-            {
-                JobName = "show tables job",
-                StatusFolder = "/AAFooBar",
-                Query = "select * from tweets where placeName like '%Sydney %';"
-            };
-
-            // Submit the Hive job
-            var jobClient = JobSubmissionClientFactory.Connect(creds);
-            var jobResults = jobClient.CreateHiveJob(hiveJobDefinition);
-
-            WaitForJobCompletion(jobResults, jobClient);
-
-
-            // Print the Hive job output
-            System.IO.Stream stream = jobClient.GetJobOutput(jobResults.JobId);
-
-            StreamReader reader = new StreamReader(stream);
-            Console.WriteLine(reader.ReadToEnd());
-        }
-
+       
 
         static void Main(string[] args)
         {
@@ -125,18 +107,21 @@ namespace SubmitHiveJob
             string subscriptionId = ConfigurationManager.AppSettings["AzureSubscriptionID"];
             string clusterName = ConfigurationManager.AppSettings["ClusterName"];
             string certfriendlyname = ConfigurationManager.AppSettings["AzurePublisherCertName"];
+            string storageAccount = ConfigurationManager.AppSettings["AzureStorageAccount"];
 
             var settings = new AzureSettings
                                          {
                                              ClusterName = clusterName,
                                              LocalCertName = certfriendlyname,
-                                             SuscriptionId = subscriptionId
+                                             SuscriptionId = subscriptionId,
+                                             StorageAccount = storageAccount
                                          };
 
             var creds = GenerateJobSubmissionCert(settings);
 
             Console.WriteLine("START " + DateTime.Now.ToLongTimeString());
-            TestBasicQuery(creds);
+            //CreateTables(creds, settings);
+            LoadTweets(creds, settings);
              
             Console.WriteLine("END " + DateTime.Now.ToLongTimeString());
 
