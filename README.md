@@ -6,32 +6,43 @@ A node.js twitter stream aggregator and Hadoop file processor.
 
 # Basic Usage
 
-Specify the key words/ hash tags you want to aggregate from the twitter streaming API 
+# Tweet Aggregator
 
-```javascript
-var watchList = ['#nye', '#newyearseve', '#newyear' , '#newyears','#happynewyear', 'new year'];
-];
-```
+Configure config.JSON with:
+ * Your Twitter API credentials
+ * Log file destination
+ * Max log file size (default is 5MB)
+ * Keyword watchlist
+ 
 
-Specify a  temporary folder location to store all tweets
+npm install express, rotating-log, socket-io, twit
+ 
+In a console, run node server.js, visit localhost:8080, capture as many tweets as you want. Ctrl +  C to kill web server.
 
-```javascript
-var RotatingLog = require('rotating-log')
-,   logfile     = 'Z:/Downloads-2/Tweets/nye.log'
-,   log         = RotatingLog(logfile, {keep:200, maxsize:20000000}) // 20MB in size
-```
+#Azure Powershell
 
-Ingest and Aggregate the tweets into Hapdoop Distribution (HDInsight) , aggregate by geo -location
+Add-AzureAccount
+Set-Subscription
+Set-AzureBlobStorageContent - File yourtweets -Blob Tweets/n
+Set-AzureBlobStorageContent - File youridentifiers - Blob Identifiers/0
 
-Generate a JSON file of the output to visualize using Google Chromes Web GL Globe project
+#HDInsight Client
 
-# Technologies
+Generate certificate, use Certificate Manager to give it a friendly name.
 
-- node.js
-- HIVE & HDInsight ( Hadoop distribution on Windows Azure)
-- C#.NET to submit jobs to Hive
-- Chrome Experiments - WebGL Globe
+Configure App.Config with:
+ * Azure Storage Account name
+ * Azure subscription ID
+ * HDFS cluster name
+ * Local certificate friendly name
+ 
+If this is your first time running, uncomment the line CreateTables to create the Hive external tables pointing to your Tweets and Identifiers directory.
 
-# More Info
+# Power Query
 
-http://acaseyblog.wordpress.com/2014/01/06/a-visualization-of-new-years-eve-2014-on-twitter/
+Open Excel, Azure -> Azure Blob Storage
+
+Supply URL of storage account and account key.
+AAALoadTweets/stdout -> Binary -> Close and Load.
+
+Bonus task: Modify identifiers file, re-run Hive job, refresh Power Query.
