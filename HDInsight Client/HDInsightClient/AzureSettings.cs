@@ -8,7 +8,7 @@ namespace SubmitHiveJob
         public String SuscriptionId { get; set; }
         public String ClusterName { get; set; }
         public String LocalCertName { get; set; }
-
+         public string StorageAccount { get; set; }
 
     }
 }
