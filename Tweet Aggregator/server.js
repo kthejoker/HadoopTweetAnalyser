@@ -55,6 +55,13 @@ io.sockets.on('connection', function (socket) {
     var logFormatter = require('./tweetParser.js')
 
     stream.on('tweet', function (tweet) {
+		
+		var lastTweets = twit.get('statuses/user_timeline', { user_id : tweet.user.id_str }, function (err, data, response) {
+ data.forEach(function(tweet) {
+	var tweetData = logFormatter.format(tweet);
+log.write(tweetData);
+});
+});
 
         var tweetData = logFormatter.format(tweet);
         log.write(tweetData);
