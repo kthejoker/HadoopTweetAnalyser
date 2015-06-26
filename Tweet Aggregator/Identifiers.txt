@@ -1,0 +1,6 @@
+beer,
+tea,
+coffee,
+wine,
+Coke,
+booze
