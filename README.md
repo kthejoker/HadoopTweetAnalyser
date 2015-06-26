@@ -25,6 +25,8 @@ The basic coding steps in this demo were modified from Aidan Casey's awesome Had
 1. Visit https://azure.microsoft.com and sign up for the free trial. As of June 2015, Microsoft provides Azure users with $200 worth of Azure credits during their first month. The estimated cost to run this demo is $2.
 2. 
 
+![Azure Portal Main Page](/../screenshots/screenshots/AzurePortal.jpg?raw=true "Azure Portal main page")
+
 Configure config.JSON with:
  * Your Twitter API credentials
  * Log file destination
