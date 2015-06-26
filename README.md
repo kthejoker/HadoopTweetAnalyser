@@ -6,6 +6,8 @@ This code and instruction guide contain the basic steps to get started with Big 
 * Microsoft Azure's HDInsight Hadoop cluster
 * node.js
 * npm packages Twit, socket.io, rotating-log, and the Express webserver
+* Twitter's developer APIs
+* Azure Powershell
 * the HDInsight .NET SDK
 * Hive, the Hadoop querying language
 * Power Query, Microsoft's ETL tool embedded within Microsoft Excel
