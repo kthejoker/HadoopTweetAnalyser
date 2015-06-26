@@ -20,7 +20,7 @@ When you have completed this demo and any additional testing you wish to perform
 
 1. Sign up for Microsoft Azure and provision a storage account and HDInsight Cluster.
 2. Sign up for a Twitter developer API access key to be able to access and capture streaming tweets.
-3. Configure and execute our Node.JS webserver to identify interesting users by keywords in their tweets, then capture those users' tweets to perform a crude basket analysis on our original keywords.
+3. Configure and execute our Node.JS webserver to capture tweets for analysis.
 4. Using Azure Powershell, push our tweets and a custom keyword dictionary to Azure Blob Storage.
 5. Submit Hive jobs both through Powershell and using the HDInsight .NET SDK.
 6. Analyze the results of our data crunching in Excel via Power Query.
@@ -32,8 +32,8 @@ When you have completed this demo and any additional testing you wish to perform
 
 ![Azure Portal Main Page](/../screenshots/screenshots/AzurePortal.JPG?raw=true "Azure Portal main page")
 
-3. Add a Storage Account. Select "NEW" at the bottom of the portal, then Data Services -> Storage -> Create. Provide a unique subdomain for your URL, and be sure to choose an Affinity Group near your location for this demo.
-4. Once your Storage Account has been provisioned, add your new HDInsight Cluster. Again select "NEW" at the bottom of the portal, then Data Services -> HDInsight -> Hadoop. Choose another unique subdomain for your cluster's URL, choose "2 data nodes" for the cluster size, a password to access the cluster via HTTP (remember this for later!), and for the Storage Account choose the Storage Account you created in step 3.
+3. Add a Storage Account. Select "NEW" at the bottom of the portal, then Data Services -> Storage -> Create. Provide a unique subdomain for your URL, and be sure to choose an Affinity Group near your location for this demo. Wait until the Storage Account has been provisioned.
+4. Add your new HDInsight Cluster. Again select "NEW" at the bottom of the portal, then Data Services -> HDInsight -> Hadoop. Choose "2 data nodes" for the cluster size, and remember the password you choose here, as you'll need it later in the demo.
 
 ![Create a new HD Insight Cluster](/../screenshots/screenshots/NewHDInsightCluster.JPG?raw=true "Create a new HD Insight Cluster")
 
@@ -42,10 +42,12 @@ While the cluster is provisioning, we can move on to the next part of the tutori
 ## Signing up for a Twitter developer API
 
 1. Sign up for a Twitter account. You can use your existing account or create a new one solely to maintain your apps if you desire.
-2. Once logged in to Twitter, visit https://apps.twitter.com/app/new. Fill out the information in the form. For the purposes of this demo, you can enter anything in the Website field as we're not actually building a production app.
-3. Once your app has been created, select it from the main screen at https://apps.twitter.com. From within the App settings page, choose the "Keys and Access Tokens" tab. Stay on this page, you'll need these in the next part of the tutorial.
+2. Visit https://apps.twitter.com/app/new. Fill out the information in the form. For the purposes of this demo, you can enter anything in the Website field as we're not actually building a production app.
+3. Select your new app from the main screen at https://apps.twitter.com. From within the App settings page, choose the "Keys and Access Tokens" tab. Stay on this page, you'll need these in the next part of the tutorial.
 
 ## Installing and executing our Node.JS Tweet Aggregator
+
+Our aggregator will work as a two-pass system. First, we will enter keywords to identify Twitter users we are interested in analyzing. Then we will capture the previous 200 tweets of these users to perform basket analysis on these users. In short, we'll try to find other posting patterns among the users who post about the keywords we choose.
 
 1. First, download and install node.js at https://nodejs.org/download/.
 2. Once installed, open a Command Prompt and navigate to the Tweet Aggregator folder from this codebase.
@@ -58,8 +60,8 @@ While the cluster is provisioning, we can move on to the next part of the tutori
 
 ![Node webserver is running](/../screenshots/screenshots/RunningNodeServer.JPG?raw=true "A successfully running Node.JS webserver")
 
-5. Open a web browser and visit http://localhost:8080 . If you've chosen fairly popular keywords, you should begin to see matching tweets emitting both into the console and the browser window, as well as logs being generated in your log directory.
-6. You can let this run as long as you wish, but for the purposes of this demo, 3-5 minutes should hopefully provide a sufficient number of user tweets to analyze.
+5. Open a web browser and visit http://localhost:8080 . If you've chosen fairly popular keywords, you should begin to see matching tweets emitting both into the console and the browser window, as well as logs generating in your log directory.
+6. You can let this run as long as you wish, but for the purposes of this demo, 3-5 minutes should provide enough user tweets to analyze.
 7. When you are satisfied with your results, return to the console and hit Ctrl + C to stop the web server.
 
 
@@ -68,15 +70,15 @@ As a last step, you may optionally create a text file, <em>Identifiers.txt</em>,
 ## Uploading our tweets and custom keyword dictionary to our HDInsight Cluster
 
 1. Install Azure Powershell ( https://github.com/Azure/azure-powershell/releases ) and open the program.
-2. At the prompt enter <code>Add-AzureAccount</code>. This will lead to a popup window where you re-enter your Azure login credentials so PowerShell can send commands on your behalf to your Azure servers.
+2. At the prompt enter <code>Add-AzureAccount</code>. Re-enter your Azure credentials in the popup to connect your Powershell session to your Azure account.
 3. Next enter <code>Set-AzureSubscription -SubscriptionName "<b>(your subscription name)</b>" -CurrentStorageAccount "<b>(your Storage Account name)</b>"</code>. You can find your Subscription Name under the Settings tab of your Azure Management Portal.
 
 ![Azure Settings](/../screenshots/screenshots/AzureSettings.JPG?raw=true "Azure Settings")
 
 4. Now we'll upload our two files (Tweets.log and Identifiers.txt) to our HDInsight Cluster. (Technical note: When creating an HDInsight Cluster, the Storage Account adds a container with the same name as the cluster to itself.) The two commands to enter are
 
-<code>'Set-AzureStorageBlobContent -Container <b>(your cluster name)</b> -File <b>(C:\path\to\Tweets.log)</b> -Blob Tweets\1'
-'Set-AzureStorageBlobContent -Container <b>(your clutser name)</b> -File <b>(C:\path\to\Identifiers.txt)</b> -Blob Identifiers\1'</code>
+<code>Set-AzureStorageBlobContent -Container <b>(your cluster name)</b> -File <b>(C:\path\to\Tweets.log)</b> -Blob Tweets\1
+Set-AzureStorageBlobContent -Container <b>(your clutser name)</b> -File <b>(C:\path\to\Identifiers.txt)</b> -Blob Identifiers\1</code>
 
 Now we're ready to turn our files into Hive tables and run Hive jobs against them to retrieve our data.
 
@@ -84,9 +86,9 @@ Now we're ready to turn our files into Hive tables and run Hive jobs against the
 
 It's possible to run the scripts to create the Hive tables and submit Hive jobs to produce our data directly through Azure Powershell using the 'Invoke-Hive' command. You can also visit the HTTP site for your cluster at
 
-https://(your cluster name).azurehdinsight.net/
+<code>https://(your cluster name).azurehdinsight.net/</code>
 
-(When prompted, the username is <code>admin</code> and the password is the one you used when creating the cluster in Azure.)
+(When prompted, the username is <code>admin</code> and the password is the one you entered when creating the cluster in Azure.)
 
 And from there use the Hive Editor tab to submit and monitor jobs. Here are the Hive queries you need:
 
@@ -112,7 +114,7 @@ Generating data with the identifiers filter:
 
 First, we must generate a personal certificate to allow our application to submit Hive jobs to your Azure portal on our behalf. 
 
-1. Locate the Visual Studio Command Prompt application on your computer. This may also be called the Developer Command Prompt depending on the version of Visual Studio you may have. There should be a shortcut in your Visual Studio program folder under your Start Menu, or in Windows 8 you can search for it by hitting the Windows button, pressing Ctrl + Tab, and hitting V to filter your applications.
+1. Locate the Visual Studio Command Prompt application on your computer. This may also be called the Developer Command Prompt depending on the version of Visual Studio you have. There should be a shortcut in your Visual Studio program folder under your Start Menu. In Windows 8 you can search for it by hitting the Windows button, pressing Ctrl + Tab, and hitting V.
 2. You must run the VS COmmand Prompt as an Administrator in order to generate certificates.
 3. Run the following command, substituiting any certificate name for HDInsightDemo if you wish:
 
@@ -120,7 +122,7 @@ First, we must generate a personal certificate to allow our application to submi
 
 ![Certificate Generated](/../screenshots/screenshots/GenerateCertificate.JPG?raw=true "Generate Certificate")
 
-4. Run Certificate Manager (Start -> Run -> certmgr.msc) and locate your certificate under Personal -> Certificates. Right click your certificate and select Properties. Enter a Friendly Name for the certificate, and note this down for use in our .NET application.
+4. Run Certificate Manager (<code>Start -> Run -> certmgr.msc</code>) and locate your certificate (<code>Personal -> Certificates</code>). Right click your certificate and select Properties. Enter a Friendly Name for the certificate, and note this down for use in our .NET application.
 5. Return to the Azure Management Portal. Under Settings, choose the Management Certificates tab, and upload your certificate to Azure.
 
 ![Azure Certificate Upload](/../screenshots/screenshots/AzureCertificate.JPG?raw=true "Azure Certificate")
@@ -133,10 +135,10 @@ Now we're ready to submit Hive jobs via applications without our direct credenti
 2. In the App.config file, fill in the values for the <code>AzureSubscriptionID</code>, <code>ClusterName</code>, 
     <code>AzurePublisherCertName</code> (i.e. the Friendly Name from the steps above), and <code>AzureStorageAccount</code>.
 3. Build the solution to retrieve the associated NuGet packages required to compile.
-4. For the first execution, uncomment the CreateTables() call in Main(). (Once the tables have been created, you can re-comment this line out.)
+4. For the first execution, uncomment the <code>CreateTables()</code> call in <code>Main()</code>. (Once you create the tables, you can re-comment this line out.)
 5. Start the application.
-6. You can monitor the Hive jobs on the server by visiting the cluster website https://(your cluster name).azurehdinsight.net/ and choosing the Job History tab.
-7. After approximately 2-3 minutes, the two jobs should be complete and hopefully you can see the results of the select query in your console window for the application.
+6. You can monitor the Hive jobs on the server by visiting the cluster website <code>https://(your cluster name).azurehdinsight.net/</code> and choosing the Job History tab.
+7. After approximately 2-3 minutes, the two jobs should be complete and (fingers crossed!) you can see the results of the select query in your console window for the application.
 
 ## Accessing the Data in Power Query
 
@@ -148,26 +150,26 @@ Now we're ready to submit Hive jobs via applications without our direct credenti
 
 4. Enter the URL of your storage account ( https://(your storage account).blob.core.windows.net/ ).
 5. When prompted, enter your Access Key. You can find this in the Azure Management Portal. Select Storage and then choose Manage Access Keys at the bottom of the screen. A window will pop up where you can copy your Access Key to paste back into Excel.
-6. Power Query now presents you with the Navigator window. First choose your HDInsight cluster's storage container from the left panel, and then choose the "Edit" button from the lower right to proceed to the Power Query editor window.
+6. Power Query now presents you with the Navigator window. First, choose your HDInsight cluster's storage container from the left panel. Then choose the "Edit" button in the lower right corner to go to the Power Query editor window.
 
 ![Choosing Azure in Power Query](/../screenshots/screenshots/PowerQueryNavigator.JPG?raw=true "Choosing Azure in Power Query")
 
-7. Within the editor window, find the row where the name column is <code>AAALoadTweets/stdout</code> (Technical note: the status folder was set in our .NET code, and stdout is the default output file name for Hive jobs.) Select the corresponding Binary link under the Content column to retrieve our generated dataset.
+7. Within the editor window, find the row where the value of the Name column is <code>AAALoadTweets/stdout</code>. Select the corresponding Binary link under the Content column to retrieve our generated dataset.
 8. Choose Close and Load from the top menu to pull the data into Excel as a table.
 
 ## Next Steps
 
-Now that you're a Big Data expert, here are some additional tasks to attempt to increase your knowledge of the various technologies in play with this demo:
+Now that you're a Big Data expert, here are some more tasks to try!
 
-1. Modify the Node.JS server to pull only incoming Tweets from the United Kingdom.
-2. Modify the Identifiers.txt and upload your new file to Azure, overwriting the existing file, re-run the job, and refresh Excel.
-3. Modify the Hive query to return only the hashtags contained in the Tweets.
-4. Modify the Hive query to only return words following the phrase "I love" in a Tweet. (Hint: context_ngrams )
-4. Write a Powershell script file to perform all the steps from this demo in a single script, including invoking a Hive query to create the external tables.
-5. Try to automate the entire workflow within the .NET solution - generating Tweets, uploading to Azure, and submitting Hive jobs.
+1. Change the Node.JS server code to pull only incoming Tweets from the United Kingdom.
+2. Change the keywords in Identifiers.txt. Re-upload the file to Azure, re-run the .NET application, and refresh Excel.
+3. Change the Hive query to return only the hashtags contained in the Tweets.
+4. Change the Hive query to only return words following the phrase "I love" in a Tweet. (Hint: context_ngrams )
+4. Write a Powershell script file to perform all the Powershell steps from this demo; add a step invoking a Hive query to create the external tables.
+5. Try to automate the entire workflow within the .NET solution.
 6. Use Sqoop to bring the data into a SQL Server database.
-6. Look into additional Big Data tools like HBase, Pig, Storm, Oozie, and Tez. Become familiar with their use cases.
-7. Try using the geographic coordinates from our Tweets to produce a Power View report in Excel with a Map chart showing where the Tweets originated from.
+6. Look into other Big Data tools like HBase, Pig, Storm, Oozie, and Tez. Become familiar with their use cases.
+7. Try using the geographic coordinates from our Tweets to produce a Map chart in Power View.
 
 Practical Big Data Questions
 
