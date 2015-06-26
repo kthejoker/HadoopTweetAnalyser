@@ -54,7 +54,7 @@ Our aggregator will work as a two-pass system. First, we will enter keywords to 
 1. First, download and install node.js at https://nodejs.org/download/.
 2. Once installed, open a Command Prompt and navigate to the Tweet Aggregator folder from this codebase.
 3. At the prompt, enter <code>npm install</code>. This will download all of the necessary packages to run our webserver.
-4. Open the file <em>config.json</em> within the Tweet Aggregator folder. Fill in the following information:
+4. Rename the file <em>sample.config.json</em> within the Tweet Aggregator folder to <em>config.json</em>. Fill in the following information:
   * From Twitter, the <code>consumer_key</code>, <code>consumer_secret</code>, <code>access_token</code>, and <code>access_token_secret</code>.
   * The <code>log_directory</code> for where to store the generated Tweet logs.
   * The <code>tweet_keywqrds</code> you wish to track in Tweets, separated by commas.
