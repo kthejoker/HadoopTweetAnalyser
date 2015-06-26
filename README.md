@@ -1,12 +1,29 @@
-HadoopTweetAnalyser
+A Practical Guide To Big Data - Demo Code
 ===================
-A node.js twitter stream aggregator and Hadoop file processor.
 
+This code and instruction guide contain the basic steps to get started with Big Data in Microsoft's Azure platform. It utilizes the following technologies:
 
+* Microsoft Azure's HDInsight Hadoop cluster
+* node.js
+* npm packages Twit, socket.io, rotating-log, and the Express webserver
+* the HDInsight .NET SDK
+* Hive, the Hadoop querying language
+* Power Query, Microsoft's ETL tool embedded within Microsoft Excel
 
-# Basic Usage
+The basic coding steps in this demo were modified from Aidan Casey's awesome HadoopTweetAnalyser project. Thanks, Aidan!
 
-# Tweet Aggregator
+## Demo Outline
+
+1. Sign up for Microsoft Azure and provision a storage account and HDInsight Cluster.
+2. Configure and execute our Node.JS webserver to capture user tweets triggered by various keywords.
+3. Using Azure Powershell, push our tweets and a custom keyword dictionary to Azure Blob Storage.
+4. Submit Hive jobs both through Powershell and using the HDInsight .NET SDK.
+5. Analyze the results of our data crunching in Excel via Power Query.
+
+# Signing up for Microsoft Azure
+
+1. Visit https://azure.microsoft.com and sign up for the free trial. As of June 2015, Microsoft provides Azure users with $200 worth of Azure credits during their first month. The estimated cost to run this demo is $2.
+2. 
 
 Configure config.JSON with:
  * Your Twitter API credentials
