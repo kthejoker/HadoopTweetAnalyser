@@ -1,6 +1,8 @@
 A Practical Guide To Big Data - Demo Code
 ===================
 
+This guide was prepared in conjunction with a presentation given to the Houston BI Users Meetup group on July 24, 2015. The PowerPoint presentation is included in the codebase.
+
 This code and instruction guide contain the basic steps to get started with Big Data in Microsoft's Azure platform. It utilizes the following technologies:
 
 * Microsoft Azure's HDInsight Hadoop cluster
