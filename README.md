@@ -57,7 +57,7 @@ Our aggregator will work as a two-pass system. First, we will enter keywords to 
 2. Once installed, open a Command Prompt and navigate to the Tweet Aggregator folder from this codebase.
 3. If you are behind a corporate proxy, enter the following commands, substituting your company's proxy URL: 
 
-<code>npm config set proxy http://proxy.company.com:8080</code>
+<code>npm config set proxy http://proxy.company.com:8080</code><br />
 <code>npm config set https-proxy http://proxy.company.com:8080</code>
 
 4. At the prompt, enter <code>npm install</code>. This will download all of the necessary packages to run our webserver. Note: if you are on a proxy, you will need to run the 
