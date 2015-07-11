@@ -55,12 +55,17 @@ Our aggregator will work as a two-pass system. First, we will enter keywords to 
 
 1. First, download and install node.js at https://nodejs.org/download/.
 2. Once installed, open a Command Prompt and navigate to the Tweet Aggregator folder from this codebase.
-3. At the prompt, enter <code>npm install</code>. This will download all of the necessary packages to run our webserver.
-4. Rename the file <em>sample.config.json</em> within the Tweet Aggregator folder to <em>config.json</em>. Fill in the following information:
+3. If you are behind a corporate proxy, enter the following commands, substituting your company's proxy URL: 
+
+<code>npm config set proxy http://proxy.company.com:8080</code>
+<code>npm config set https-proxy http://proxy.company.com:8080</code>
+
+4. At the prompt, enter <code>npm install</code>. This will download all of the necessary packages to run our webserver. Note: if you are on a proxy, you will need to run the 
+5. Rename the file <em>sample.config.json</em> within the Tweet Aggregator folder to <em>config.json</em>. Fill in the following information:
   * From Twitter, the <code>consumer_key</code>, <code>consumer_secret</code>, <code>access_token</code>, and <code>access_token_secret</code>.
   * The <code>log_directory</code> for where to store the generated Tweet logs.
   * The <code>tweet_keywqrds</code> you wish to track in Tweets, separated by commas.
-4. Now enter into the console <code>node server.js</code>. If successful, you should see something like this in the command console:
+6. Now enter into the console <code>node server.js</code>. If successful, you should see something like this in the command console:
 
 ![Node webserver is running](/../screenshots/screenshots/RunningNodeServer.JPG?raw=true "A successfully running Node.JS webserver")
 
@@ -98,7 +103,7 @@ And from there use the Hive Editor tab to submit and monitor jobs. Here are the 
 
 Creating tables:
 
-<code>DROP TABLE tweets; CREATE EXTERNAL TABLE tweets( id_str string, created_at string, retweet_count string, tweetText string, userName string, userId string, screenName string, countryCode string, placeType string, placeName string, placeType1 string, coordinates array<string>) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' COLLECTION ITEMS TERMINATED BY ',' STORED AS TEXTFILE location 'wasb://<b>(your cluster name)</b>@<b>(your storage account)</b>.blob.core.windows.net/Tweets';
+<code>DROP TABLE tweets; CREATE EXTERNAL TABLE tweets( id_str string, created_at string, retweet_count string, tweetText string, userName string, userId string, screenName string, countryCode string, placeType string, placeName string, placeType1 string, coordinates array&lt;string&gt;) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' COLLECTION ITEMS TERMINATED BY ',' STORED AS TEXTFILE location 'wasb://<b>(your cluster name)</b>@<b>(your storage account)</b>.blob.core.windows.net/Tweets';
 
 DROP TABLE identifiers; CREATE EXTERNAL TABLE identifiers(identifier string) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' STORED AS TEXTFILE location 'wasb://<b>(your cluster name)</b>@<b>(your storage account)</b>.blob.core.windows.net/Identifiers'</code>
 
@@ -139,10 +144,11 @@ Now we're ready to submit Hive jobs via applications without our direct credenti
 2. In the App.config file, fill in the values for the <code>AzureSubscriptionID</code>, <code>ClusterName</code>, 
     <code>AzurePublisherCertName</code> (i.e. the Friendly Name from the steps above), and <code>AzureStorageAccount</code>.
 3. Build the solution to retrieve the associated NuGet packages required to compile.
-4. For the first execution, uncomment the <code>CreateTables()</code> call in <code>Main()</code>. (Once you create the tables, you can re-comment this line out.)
-5. Start the application.
-6. You can monitor the Hive jobs on the server by visiting the cluster website <code>https://(your cluster name).azurehdinsight.net/</code> and choosing the Job History tab.
-7. After approximately 2-3 minutes, the two jobs should be complete and (fingers crossed!) you can see the results of the select query in your console window for the application.
+4. You may also need to manually update the packages for the solution, you can do this under the menu heading Tools > Manage NuGet Packages, and then in the dialog screen which comes up choose "Installed" on the left and then "Update All."
+5. For the first execution, uncomment the <code>CreateTables()</code> call in <code>Main()</code>. (Once you create the tables, you can re-comment this line out.)
+6. Start the application.
+7. You can monitor the Hive jobs on the server by visiting the cluster website <code>https://(your cluster name).azurehdinsight.net/</code> and choosing the Job History tab.
+8. After approximately 2-3 minutes, the two jobs should be complete and (fingers crossed!) you can see the results of the select query in your console window for the application.
 
 ## Accessing the Data in Power Query
 
